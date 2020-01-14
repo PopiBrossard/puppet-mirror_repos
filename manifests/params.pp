@@ -9,6 +9,14 @@ class mirror_repos::params {
               $repos_dir    = '/repos'
               $repos        = {}
     }
+    'Debian': {
+              $packages     = ['createrepo', 'yum-utils']
+              $manage_vhost = true
+              $vhosts       = {}
+              $config_dir   = '/etc/mirror.repos.d'
+              $repos_dir    = '/repos'
+              $repos        = {}  
+    }
     default: {
               fail("${::operatingsystem} not supported")
     }
