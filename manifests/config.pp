@@ -23,9 +23,35 @@ class mirror_repos::config {
     mode    => '0755',
     content => template('mirror_repos/update-repos.sh.erb'),
   }
+  if ($download_comps) {
+    $download_comps_string = '--downloadcomps '
+  } else {
+    $download_comps_string = ''
+  }
+  if (!$gpg_check) {
+    $gpg_check_string = '--no-gpgcheck '
+  } else {
+    $gpg_check_string = ''
+  }
+  if ($delete) {
+    $delete_string = '--delete '
+  } else {
+    $delete_string = ''
+  }
+  if ($newest_only) {
+    $newest_only_string = '--newest-only '
+  } else {
+    $newest_only_string = ''
+  }
+  if ($cache_dir) {
+    $cache_dir_string = '--cachedir ${cache_dir}'
+  } else {
+    $cache_dir_string = ''
+  }
+  $options = "${download_comps_string}${gpg_check_string}${delete_string}${newest_only_string}${cache_dir}"
   #run cron every night to update repos
   cron { 'update-repos':
-    command => '/usr/sbin/update-repos',
+    command => "/usr/sbin/update-repos -v ${options} | /usr/bin/logger -t mirror_repos",
     user    => 'root',
     hour    => 1,
     minute  => 0,

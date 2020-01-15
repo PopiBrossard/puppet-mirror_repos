@@ -9,12 +9,17 @@ exec 4>&2
 #default variables
 : ${UPDATE:=True}
 : ${VERBOSE:=False}
+: ${GPG_CHECK:=True}
+: ${COMPS:=True}
+: ${DELETE:=True}
+: ${NEWEST:=True}
 
 #define variables
 REPOS_DIR=<%= scope.lookupvar('mirror_repos::repos_dir') %>
 CONFIG_DIR=<%= scope.lookupvar('mirror_repos::config_dir') %>
 CREATEREPO_CMD=`which createrepo`
 REPOSYNC_CMD="$(which reposync) -q"
+CACHEDIR='/var/tmp'
 
 show_help(){
 
@@ -28,6 +33,11 @@ where:
       -r | --repo             repo name to update (all by default)
       -v | --verbose          show output/error to stdout/stderr (redirect to /dev/null by default)
       -u | --update           repos update only (enabled by default)
+      -g | --no-gpgcheck      remove gpg check (enabled by default)
+      -m | --downloadcomps    also download comps.xml (disabled by default)
+      -d | --delete           delete local packages no longer present in repository (disabled by default)
+      -n | --newest-only      Download only newest packages per-repo (disabled by default)
+      -c | --cachedir         set path to cache dir for createrepo command
 
 By default, running this script sync all available repositories for all OS.
 For syncing only a single/few repos give reponames with -r option seperated by commas.
@@ -42,6 +52,19 @@ OPTIONS=$(getopt -o "vuho:r:" -l "verbose,update,help,os:,repo:" -n 'update-repo
 
 
 main(){
+    option=''
+    if [ ${GPG_CHECK} == 'True' ]; then
+      option+=' -g'
+    fi
+    if [ ${COMPS} == 'True' ]; then
+      option+=' -m'
+    fi
+    if [ ${DELETE} == 'True' ]; then
+      option+=' -d'
+    fi
+    if [ ${NEWEST} == 'True' ]; then
+      option+=' -n'
+    fi
     if [ ${UPDATE} == 'True' ]; then
         [ ! -f $CONFIG_DIR/$OS.conf ] && echo "$OS configuration not available at $CONFIG_DIR" && exit 1
         for REPO in ${REPOS_OS[@]}; do
@@ -52,9 +75,9 @@ main(){
             yum clean all >& /dev/null
             #sync remote repos to local directories
 
-            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS.conf --repoid=$REPO --download_path=$REPOS_DIR/$OS/
+            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS.conf --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
             #create yum repository from local synced directories
-            $CREATEREPO_CMD --workers=8 --update $REPOS_DIR/$OS/$REPO
+            $CREATEREPO_CMD --workers=8 --update --cachedir $CACHEDIR $REPOS_DIR/$OS/$REPO
         done
         #reset REPOS for next OS
         REPOS_OS=''
@@ -83,6 +106,26 @@ while true; do
                   ;;
           -u | --update)
                   shift
+                  ;;
+          -g | --no-gpgcheck)
+                  GPGCHECK=False
+                  shift
+                  ;;
+          -m | --downloadcomps)
+                  COMPS=True
+                  shift
+                  ;;
+          -d | --delete)
+                  DELETE=True
+                  shift
+                  ;;
+          -n | --newest-only)
+                  NEWEST=True
+                  shift
+                  ;;
+          -c | --cachedir)
+                  CACHEDIR="$2"
+                  shift 2
                   ;;
           --)
                   shift

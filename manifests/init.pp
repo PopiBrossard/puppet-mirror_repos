@@ -35,12 +35,17 @@
 #
 #
 class mirror_repos (
-    Array $packages       = $mirror_repos::params::packages,
-    Hash $repos           = $mirror_repos::params::repos,
-    Hash $vhosts          = $mirror_repos::params::vhosts,
-    String $config_dir    = $mirror_repos::params::config_dir,
-    String $repos_dir     = $mirror_repos::params::repos_dir,
-    Boolean $manage_vhost = $mirror_repos::params::manage_vhost,
+    Array $packages         = $mirror_repos::params::packages,
+    Hash $repos             = $mirror_repos::params::repos,
+    Hash $vhosts            = $mirror_repos::params::vhosts,
+    String $config_dir      = $mirror_repos::params::config_dir,
+    String $repos_dir       = $mirror_repos::params::repos_dir,
+    Boolean $manage_vhost   = $mirror_repos::params::manage_vhost,
+    Boolean $download_comps = $mirror_repos::params::download_comps,
+    Boolean $gpg_check      = $mirror_repos::params::gpg_check,
+    Boolean $delete         = $mirror_repos::params::delete,
+    Boolean $newest_only    = $mirror_repos::params::newest_only,
+    String $cache_dir       = $mirror_repos::params::newest_only,
   ) inherits mirror_repos::params {
 
     class { '::mirror_repos::install': }
