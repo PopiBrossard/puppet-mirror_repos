@@ -47,7 +47,7 @@ EOF
 }
 
 #make options based on help
-OPTIONS=$(getopt -o "vuho:r:" -l "verbose,update,help,os:,repo:" -n 'update-repos' -- "$@")
+OPTIONS=$(getopt -o "vuhgmdno:r:c:" -l "verbose,update,help,no-gpgcheck,downloadcomps,delete,newest-only,os:,repo:,cachedir:" -n 'update-repos' -- "$@")
 [ $? -eq 0 ] && eval set -- "$OPTIONS"
 
 
@@ -66,16 +66,16 @@ main(){
       option+=' -n'
     fi
     if [ ${UPDATE} == 'True' ]; then
-        [ ! -f $CONFIG_DIR/$OS.conf ] && echo "$OS configuration not available at $CONFIG_DIR" && exit 1
+        [ ! -f $CONFIG_DIR/$OS_NAME.repo ] && echo "$OS_NAME configuration not available at $CONFIG_DIR" && exit 1
         for REPO in ${REPOS_OS[@]}; do
-            if ! egrep -s "\[$REPO\]" $CONFIG_DIR/$OS.conf >& /dev/null ; then
+            if ! egrep -s "\[$REPO\]" $CONFIG_DIR/$OS_NAME.repo >& /dev/null ; then
                 echo "$REPO configuration not available" && exit 1
             fi
-            echo "updating $REPO for $OS now"
+            echo "updating $REPO for $OS_NAME now"
             yum clean all >& /dev/null
             #sync remote repos to local directories
 
-            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS.conf --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
+            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
             #create yum repository from local synced directories
             $CREATEREPO_CMD --workers=8 --update --cachedir $CACHEDIR $REPOS_DIR/$OS/$REPO
         done
@@ -146,12 +146,14 @@ for OS in ${OSES[@]}; do
     #if repos are specified, make them an array
     ##if repos are not specified, get from configs
     <% @oses.each do | os | -%>
-    [ $REPOS ] && REPOS_<%= os.split('-').join('_') %>=( $(echo "$REPOS" |sed 's/,/ /g') )
-    [ ${REPOS_<%= os.split('-').join('_') %>} ] || REPOS_<%= os.split('-').join('_') %>=( <%= scope.lookupvar('mirror_repos::repos')[os].keys.join(" ") %> )
+    [ $REPOS ] && REPOS_<%= os.split('-').join('_').split('/').join('_') %>=( $(echo "$REPOS" |sed 's/,/ /g') )
+    [ ${REPOS_<%= os.split('-').join('_').split('/').join('_') %>} ] || REPOS_<%= os.split('-').join('_').split('/').join('_') %>=( <%= scope.lookupvar('mirror_repos::repos')[os].keys.join(" ") %> )
     <% end -%>
     OS=$(echo $OS | sed 's/-/_/g')
+    # for variable name, remove all extra '/'
+    OS_NAME=$(echo $OS | sed 's/\//_/g')
     #now define a new array, because substrings won't perform well in for loop
-    REPOS_OS=$(eval echo \${REPOS_${OS}[*]})
+    REPOS_OS=$(eval echo \${REPOS_${OS_NAME}[*]})
     if [ ${VERBOSE} == 'False' ]; then
         exec 2>/dev/null 1>/dev/null
     fi

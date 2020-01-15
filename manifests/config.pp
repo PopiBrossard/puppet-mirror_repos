@@ -9,8 +9,8 @@ class mirror_repos::config {
   }
   #create a dir for each OS and then a file for each repo under that OS
   $mirror_repos::repos.each |String $os_name , $repos_os | {
-    $os = regsubst($os_name, '[-]', '_', 'G')
-    file {"${mirror_repos::config_dir}/${os}.conf":
+    $os = regsubst(regsubst($os_name, '[-]', '_', 'G'), '[/]', '_', 'G')
+    file {"${mirror_repos::config_dir}/${os}.repo":
       ensure  => 'file',
       mode    => '0644',
       content => template('mirror_repos/repo.conf.erb'),
