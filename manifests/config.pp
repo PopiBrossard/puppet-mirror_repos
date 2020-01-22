@@ -28,6 +28,11 @@ class mirror_repos::config {
   } else {
     $download_comps_string = ''
   }
+  if ($download_metadata) {
+    $download_metadata_string = '--download-metadata '
+  } else {
+    $download_metadata_string = ''
+  }
   if (!$gpg_check) {
     $gpg_check_string = '--no-gpgcheck '
   } else {
@@ -48,7 +53,7 @@ class mirror_repos::config {
   } else {
     $cache_dir_string = ''
   }
-  $options = "${download_comps_string}${gpg_check_string}${delete_string}${newest_only_string}${cache_dir}"
+  $options = "${download_comps_string}${download_metadata_string}${gpg_check_string}${delete_string}${newest_only_string}${cache_dir}"
   #run cron every night to update repos
   cron { 'update-repos':
     command => "/usr/sbin/update-repos -v ${options} | /usr/bin/logger -t mirror_repos",

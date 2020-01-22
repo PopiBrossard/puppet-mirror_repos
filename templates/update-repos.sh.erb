@@ -10,9 +10,10 @@ exec 4>&2
 : ${UPDATE:=True}
 : ${VERBOSE:=False}
 : ${GPG_CHECK:=True}
-: ${COMPS:=True}
-: ${DELETE:=True}
-: ${NEWEST:=True}
+: ${COMPS:=False}
+: ${METADATA:=False}
+: ${DELETE:=False}
+: ${NEWEST:=False}
 
 #define variables
 REPOS_DIR=<%= scope.lookupvar('mirror_repos::repos_dir') %>
@@ -35,6 +36,7 @@ where:
       -u | --update           repos update only (enabled by default)
       -g | --no-gpgcheck      remove gpg check (enabled by default)
       -m | --downloadcomps    also download comps.xml (disabled by default)
+      -M | --download-metadata    also download comps.xml (disabled by default)
       -d | --delete           delete local packages no longer present in repository (disabled by default)
       -n | --newest-only      Download only newest packages per-repo (disabled by default)
       -c | --cachedir         set path to cache dir for createrepo command
@@ -47,7 +49,7 @@ EOF
 }
 
 #make options based on help
-OPTIONS=$(getopt -o "vuhgmdno:r:c:" -l "verbose,update,help,no-gpgcheck,downloadcomps,delete,newest-only,os:,repo:,cachedir:" -n 'update-repos' -- "$@")
+OPTIONS=$(getopt -o "vuhgmdnMo:r:c:" -l "verbose,update,help,no-gpgcheck,downloadcomps,delete,newest-only,download-metadata,os:,repo:,cachedir:" -n 'update-repos' -- "$@")
 [ $? -eq 0 ] && eval set -- "$OPTIONS"
 
 
@@ -58,6 +60,9 @@ main(){
     fi
     if [ ${COMPS} == 'True' ]; then
       option+=' -m'
+    fi
+    if [ ${METADATA} == 'True' ]; then
+      option+=' --download-metadata'
     fi
     if [ ${DELETE} == 'True' ]; then
       option+=' -d'
@@ -73,11 +78,26 @@ main(){
             fi
             echo "updating $REPO for $OS_NAME now"
             yum clean all >& /dev/null
+            # don't update on first execution
+            if [ -d $REPOS_DIR/$OS/$REPO ]; then
+              update_repo=''
+            else
+              update_repo='--update'
+            fi
             #sync remote repos to local directories
-
             $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
             #create yum repository from local synced directories
-            $CREATEREPO_CMD --workers=8 --update --cachedir $CACHEDIR $REPOS_DIR/$OS/$REPO
+            $CREATEREPO_CMD --workers=$(nproc --all) $update_repo --cachedir $CACHEDIR $REPOS_DIR/$OS/$REPO
+            if [ "$REPO" = 'updates' ]; then
+              # manually generate updateinfo.xml file, containing metadata about security updates
+              version=$(cat $CONFIG_DIR/$OS_NAME.repo | grep -o -P '([0-9](?=/updates))')
+              generate_updateinfo -s all -t all -r $version $CACHEDIR/errata.latest.xml -d $CACHEDIR
+              modifyrepo $CACHEDIR/updates-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+            elif [ "$REPO" = 'epel' ]; then
+              # add updateinfo.xml to mirror
+              bunzip2 -c $REPOS_DIR/$OS/$REPO/$(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
+              modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+            fi
         done
         #reset REPOS for next OS
         REPOS_OS=''
@@ -115,6 +135,10 @@ while true; do
                   COMPS=True
                   shift
                   ;;
+          -M | --download-metadata)
+                  METADATA=True
+                  shift
+                  ;;
           -d | --delete)
                   DELETE=True
                   shift
@@ -142,6 +166,9 @@ done
 #if no os, is given get all OS defined in puppet hiera
 [ $OSES ] || OSES=( <%= @oses.join(" ") %> )
 
+
+# download only once errata file
+wget -q -N -P $CACHEDIR http://cefs.steve-meier.de/errata.latest.xml
 for OS in ${OSES[@]}; do
     #if repos are specified, make them an array
     ##if repos are not specified, get from configs
