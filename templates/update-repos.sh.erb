@@ -97,6 +97,18 @@ main(){
               # add updateinfo.xml to mirror
               bunzip2 -c $REPOS_DIR/$OS/$REPO/$(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
               modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+            <% if $pxeboot == true { -%>
+            elif [ "$REPO" = 'os' ]; then
+              # allow pxeboot using local mirror
+              baseurl=$(cat $CONFIG_DIR/$OS_NAME.repo | awk '/\[os\]/,/^$/' | grep baseurl | cut -d'=' -f2 | head -n 1)
+              mkdir -p $REPOS_DIR/$OS/$REPO/images/pxeboot
+              mkdir -p $REPOS_DIR/$OS/$REPO/LiveOS
+              wget -N $baseurl/images/boot.iso -P $REPOS_DIR/$OS/$REPO/images/
+              wget -N $baseurl/images/efiboot.img -P $REPOS_DIR/$OS/$REPO/images/
+              wget -N $baseurl/images/pxeboot/initrd.img -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
+              wget -N $baseurl/images/pxeboot/vmlinuz -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
+              wget -N $baseurl/LiveOS/squashfs.img -P $REPOS_DIR/$OS/$REPO/LiveOS/
+            <% } -%>
             fi
         done
         #reset REPOS for next OS

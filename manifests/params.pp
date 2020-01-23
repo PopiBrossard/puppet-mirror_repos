@@ -15,6 +15,7 @@ class mirror_repos::params {
               $newest_only              = false
               $cache_dir                = undef
               $generate_updateinfo_url  = 'https://raw.githubusercontent.com/vmfarms/generate_updateinfo/master/generate_updateinfo.py'
+              $pxeboot                  = false
     }
     'Debian': {
               $packages                 = ['createrepo', 'yum-utils']
@@ -30,6 +31,7 @@ class mirror_repos::params {
               $newest_only              = false
               $cache_dir                = undef
               $generate_updateinfo_url  = 'https://raw.githubusercontent.com/vmfarms/generate_updateinfo/master/generate_updateinfo.py'
+              $pxeboot                  = false
     }
     default: {
               fail("${::operatingsystem} not supported")

@@ -48,6 +48,7 @@ class mirror_repos (
     Boolean $newest_only            = $mirror_repos::params::newest_only,
     Optional[String] $cache_dir     = $mirror_repos::params::cache_dir,
     String $generate_updateinfo_url = $mirror_repos::params::generate_updateinfo_url,
+    Boolean $pxeboot                = $mirror_repos::params::pxeboot,
   ) inherits mirror_repos::params {
 
     class { '::mirror_repos::install': }
