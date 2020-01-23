@@ -87,7 +87,11 @@ main(){
             #sync remote repos to local directories
             $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
             #create yum repository from local synced directories
-            $CREATEREPO_CMD --workers=$(nproc --all) $update_repo --cachedir $CACHEDIR $REPOS_DIR/$OS/$REPO
+            createrepo_option=''
+            if [ -f  $REPOS_DIR/$OS/comps.xml ]; then
+              createrepo_option='-g $REPOS_DIR/$OS/comps.xml'
+            fi
+            $CREATEREPO_CMD --workers=$(nproc --all) $update_repo --cachedir $CACHEDIR $createrepo_option $REPOS_DIR/$OS/$REPO
             if [ "$REPO" = 'updates' ]; then
               # manually generate updateinfo.xml file, containing metadata about security updates
               version=$(cat $CONFIG_DIR/$OS_NAME.repo | grep -o -P '([0-9](?=/updates))')
