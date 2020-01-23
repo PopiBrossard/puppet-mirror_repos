@@ -13,9 +13,7 @@ class mirror_repos::config {
     file {"${mirror_repos::config_dir}/${os}.repo":
       ensure  => 'file',
       mode    => '0644',
-      content => template('mirror_repos/repo.conf.erb', {
-        'pxeboot' => $pxeboot,
-      }),
+      content => template('mirror_repos/repo.conf.erb'),
     }
   }
   $oses = keys($mirror_repos::repos)
