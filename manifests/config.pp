@@ -23,32 +23,32 @@ class mirror_repos::config {
     mode    => '0755',
     content => template('mirror_repos/update-repos.sh.erb'),
   }
-  if ($download_comps) {
+  if ($mirror_repos::download_comps) {
     $download_comps_string = '--downloadcomps '
   } else {
     $download_comps_string = ''
   }
-  if ($download_metadata) {
+  if ($mirror_repos::download_metadata) {
     $download_metadata_string = '--download-metadata '
   } else {
     $download_metadata_string = ''
   }
-  if (!$gpg_check) {
+  if (!$mirror_repos::gpg_check) {
     $gpg_check_string = '--no-gpgcheck '
   } else {
     $gpg_check_string = ''
   }
-  if ($delete) {
+  if ($mirror_repos::delete) {
     $delete_string = '--delete '
   } else {
     $delete_string = ''
   }
-  if ($newest_only) {
+  if ($mirror_repos::newest_only) {
     $newest_only_string = '--newest-only '
   } else {
     $newest_only_string = ''
   }
-  if ($cache_dir) {
+  if ($mirror_repos::cache_dir) {
     $cache_dir_string = '--cachedir ${cache_dir}'
   } else {
     $cache_dir_string = ''
