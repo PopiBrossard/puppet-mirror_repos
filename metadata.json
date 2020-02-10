@@ -1,5 +1,5 @@
 {
-  "name": "bp85-mirror_repos",
+  "name": "mirror_reposync",
   "version": "0.1.4",
   "author": "bp85",
   "summary": "Mirror yum repositories to local + and create yum repos from those",
