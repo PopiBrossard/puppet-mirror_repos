@@ -88,8 +88,8 @@ main(){
             $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
             #create yum repository from local synced directories
             createrepo_option=''
-            if [ -f  $REPOS_DIR/$OS/comps.xml ]; then
-              createrepo_option='-g $REPOS_DIR/$OS/comps.xml'
+            if [ -f  $REPOS_DIR/$OS/$REPO/comps.xml ]; then
+              createrepo_option='-g $REPOS_DIR/$OS/$REPO/comps.xml'
             fi
             $CREATEREPO_CMD --workers=$(nproc --all) $update_repo --cachedir $CACHEDIR $createrepo_option $REPOS_DIR/$OS/$REPO
             if [ "$REPO" = 'updates' ]; then
@@ -99,20 +99,21 @@ main(){
               modifyrepo $CACHEDIR/updates-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
             elif [ "$REPO" = 'epel' ]; then
               # add updateinfo.xml to mirror
-              bunzip2 -c $REPOS_DIR/$OS/$REPO/$(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
+              bunzip2 -c $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
               modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
-            <% if scope.lookupvar('mirror_repos::pxeboot') == true -%>
+            <% if scope.lookupvar('mirror_repos::pxeboot') == true %>
             elif [ "$REPO" = 'os' ]; then
               # allow pxeboot using local mirror
+              echo 'download needed files for pxeboot'
               baseurl=$(cat $CONFIG_DIR/$OS_NAME.repo | awk '/\[os\]/,/^$/' | grep baseurl | cut -d'=' -f2 | head -n 1)
               mkdir -p $REPOS_DIR/$OS/$REPO/images/pxeboot
               mkdir -p $REPOS_DIR/$OS/$REPO/LiveOS
-              wget -N $baseurl/images/boot.iso -P $REPOS_DIR/$OS/$REPO/images/
-              wget -N $baseurl/images/efiboot.img -P $REPOS_DIR/$OS/$REPO/images/
-              wget -N $baseurl/images/pxeboot/initrd.img -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
-              wget -N $baseurl/images/pxeboot/vmlinuz -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
-              wget -N $baseurl/LiveOS/squashfs.img -P $REPOS_DIR/$OS/$REPO/LiveOS/
-            <% end -%>
+              wget -q -N $baseurl/images/boot.iso -P $REPOS_DIR/$OS/$REPO/images/
+              wget -q -N $baseurl/images/efiboot.img -P $REPOS_DIR/$OS/$REPO/images/
+              wget -q -N $baseurl/images/pxeboot/initrd.img -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
+              wget -q -N $baseurl/images/pxeboot/vmlinuz -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
+              wget -q -N $baseurl/LiveOS/squashfs.img -P $REPOS_DIR/$OS/$REPO/LiveOS/
+            <% end %>
             fi
         done
         #reset REPOS for next OS
@@ -184,7 +185,7 @@ done
 
 
 # download only once errata file
-wget -q -N -P $CACHEDIR http://cefs.steve-meier.de/errata.latest.xml
+#wget -q -N -P $CACHEDIR http://cefs.steve-meier.de/errata.latest.xml
 for OS in ${OSES[@]}; do
     #if repos are specified, make them an array
     ##if repos are not specified, get from configs
