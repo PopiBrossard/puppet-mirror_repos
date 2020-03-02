@@ -84,6 +84,7 @@ main(){
             else
               update_repo='--update'
             fi
+            mkdir -p $REPOS_DIR/$OS/
             #sync remote repos to local directories
             $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
             #create yum repository from local synced directories
