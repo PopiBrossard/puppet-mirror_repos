@@ -186,7 +186,7 @@ done
 
 
 # download only once errata file
-#wget -q -N -P $CACHEDIR http://cefs.steve-meier.de/errata.latest.xml
+wget -q -N -P $CACHEDIR http://cefs.steve-meier.de/errata.latest.xml
 for OS in ${OSES[@]}; do
     #if repos are specified, make them an array
     ##if repos are not specified, get from configs
