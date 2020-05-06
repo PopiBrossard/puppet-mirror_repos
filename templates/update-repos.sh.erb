@@ -97,7 +97,7 @@ main(){
               # manually generate updateinfo.xml file, containing metadata about security updates
               version=$(cat $CONFIG_DIR/$OS_NAME.repo | grep -o -P '([0-9](?=/updates))')
               generate_updateinfo -s all -t all -r $version $CACHEDIR/errata.latest.xml -d $CACHEDIR
-              modifyrepo $CACHEDIR/updates-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+              modifyrepo $CACHEDIR/updateinfo-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
             elif [ "$REPO" = 'epel' ]; then
               # add updateinfo.xml to mirror
               bunzip2 -c $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
