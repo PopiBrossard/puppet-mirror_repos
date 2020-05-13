@@ -90,7 +90,7 @@ main(){
             #create yum repository from local synced directories
             createrepo_option=''
             if [ -f  $REPOS_DIR/$OS/$REPO/comps.xml ]; then
-              createrepo_option='-g $REPOS_DIR/$OS/$REPO/comps.xml'
+              createrepo_option="-g $REPOS_DIR/$OS/$REPO/comps.xml"
             fi
             $CREATEREPO_CMD --workers=$(nproc --all) $update_repo --cachedir $CACHEDIR $createrepo_option $REPOS_DIR/$OS/$REPO
             if [ "$REPO" = 'updates' ]; then
