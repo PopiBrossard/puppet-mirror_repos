@@ -98,12 +98,12 @@ main(){
               version=$(cat $CONFIG_DIR/$OS_NAME.repo | grep -o -P '([0-9](?=/updates))')
               generate_updateinfo -s all -t all -r $version $CACHEDIR/errata.latest.xml -d $CACHEDIR
               modifyrepo $CACHEDIR/updateinfo-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
-	      # old updateinfo files aren't automatically cleaned up, manually doing it
-	      for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$old_updateinfo"; done
+              # old updateinfo files aren't automatically cleaned up, manually doing it
+              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$old_updateinfo"; done
             elif [ "$REPO" = 'epel' ]; then
               # add updateinfo.xml to mirror
               bunzip2 -c $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
-	      modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+              modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
             <% if scope.lookupvar('mirror_repos::pxeboot') == true %>
             elif [ "$REPO" = 'os' ]; then
               # allow pxeboot using local mirror
@@ -116,6 +116,22 @@ main(){
               wget -q -N $baseurl/images/pxeboot/initrd.img -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
               wget -q -N $baseurl/images/pxeboot/vmlinuz -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
               wget -q -N $baseurl/LiveOS/squashfs.img -P $REPOS_DIR/$OS/$REPO/LiveOS/
+            elif [ "$REPO" = 'BaseOS' ]; then
+              # allow pxeboot using local mirror
+              echo 'download needed files for pxeboot'
+              baseurl=$(cat $CONFIG_DIR/$OS_NAME.repo | awk '/\[BaseOS\]/,/^$/' | grep baseurl | cut -d'=' -f2 | head -n 1)
+              mkdir -p $REPOS_DIR/$OS/$REPO/images/pxeboot
+              wget -q -N $baseurl/images/boot.iso -P $REPOS_DIR/$OS/$REPO/images/
+              wget -q -N $baseurl/images/efiboot.img -P $REPOS_DIR/$OS/$REPO/images/
+              wget -q -N $baseurl/images/install.img -P $REPOS_DIR/$OS/$REPO/images/
+              wget -q -N $baseurl/images/pxeboot/initrd.img -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
+              wget -q -N $baseurl/images/pxeboot/vmlinuz -P $REPOS_DIR/$OS/$REPO/images/pxeboot/
+              # manually generate updateinfo.xml file, containing metadata about security updates
+              version=$(cat $CONFIG_DIR/$OS_NAME.repo | grep -o -P '([0-9](?=/BaseOS))')
+              generate_updateinfo -s all -t all -r $version $CACHEDIR/errata.latest.xml -d $CACHEDIR
+              modifyrepo $CACHEDIR/updateinfo-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+              # old updateinfo files aren't automatically cleaned up, manually doing it
+              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$old_updateinfo"; done
             <% end %>
             fi
         done
