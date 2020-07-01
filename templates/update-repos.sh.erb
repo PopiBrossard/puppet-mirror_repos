@@ -104,6 +104,13 @@ main(){
               # add updateinfo.xml to mirror
               bunzip2 -c $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
               modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+            elif [ "$REPO" = 'AppStream' ]; then
+              # import modules.yaml
+              baseurl=$(cat $CONFIG_DIR/$OS_NAME.repo | awk '/\[AppStream\]/,/^$/' | grep baseurl | cut -d'=' -f2 | head -n 1)
+              # get most recent modules.yaml file, because current reposync version isn't downloading it
+              module_name="$(wget -q -O - $baseurl/repodata/  | egrep -o -m 1 '[a-z0-9]+-modules.yaml.[a-z]+' | sort -u)"
+              wget -q -O - $baseurl/repodata/$module_name | gunzip > $REPOS_DIR/$OS/$REPO/modules.yaml
+              modifyrepo --mdtype=modules $REPOS_DIR/$OS/$REPO/modules.yaml $REPOS_DIR/$OS/$REPO/repodata
             <% if scope.lookupvar('mirror_repos::pxeboot') == true %>
             elif [ "$REPO" = 'os' ]; then
               # allow pxeboot using local mirror
