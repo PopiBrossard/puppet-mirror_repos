@@ -99,7 +99,7 @@ main(){
               generate_updateinfo -s all -t all -r $version $CACHEDIR/errata.latest.xml -d $CACHEDIR
               modifyrepo $CACHEDIR/updateinfo-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
               # old updateinfo files aren't automatically cleaned up, manually doing it
-              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$old_updateinfo"; done
+              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$REPOS_DIR/$OS/$REPO/repodata/$old_updateinfo"; done
             elif [ "$REPO" = 'epel' ]; then
               # add updateinfo.xml to mirror
               bunzip2 -c $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
@@ -111,6 +111,8 @@ main(){
               module_name="$(wget -q -O - $baseurl/repodata/  | egrep -o -m 1 '[a-z0-9]+-modules.yaml.[a-z]+' | sort -u)"
               wget -q -O - $baseurl/repodata/$module_name | gunzip > $REPOS_DIR/$OS/$REPO/modules.yaml
               modifyrepo --mdtype=modules $REPOS_DIR/$OS/$REPO/modules.yaml $REPOS_DIR/$OS/$REPO/repodata
+              # cleanup
+              rm -f $REPOS_DIR/$OS/$REPO/modules.yaml $REPOS_DIR/$OS/$REPO/*-modules.yaml.gz
             <% if scope.lookupvar('mirror_repos::pxeboot') == true %>
             elif [ "$REPO" = 'os' ]; then
               # allow pxeboot using local mirror
@@ -138,7 +140,7 @@ main(){
               generate_updateinfo -s all -t all -r $version $CACHEDIR/errata.latest.xml -d $CACHEDIR
               modifyrepo $CACHEDIR/updateinfo-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
               # old updateinfo files aren't automatically cleaned up, manually doing it
-              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$old_updateinfo"; done
+              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$REPOS_DIR/$OS/$REPO/repodata/$old_updateinfo"; done
             <% end %>
             fi
         done
