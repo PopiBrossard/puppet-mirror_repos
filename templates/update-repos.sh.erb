@@ -104,6 +104,7 @@ main(){
               # add updateinfo.xml to mirror
               bunzip2 -c $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
               modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
+              rm -f $REPOS_DIR/$OS/$REPO/*.xml.gz $REPOS_DIR/$OS/$REPO/*.xml.bz2
             elif [ "$REPO" = 'AppStream' ]; then
               # import modules.yaml
               baseurl=$(cat $CONFIG_DIR/$OS_NAME.repo | awk '/\[AppStream\]/,/^$/' | grep baseurl | cut -d'=' -f2 | head -n 1)
