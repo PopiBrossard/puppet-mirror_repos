@@ -1,6 +1,6 @@
 {
   "name": "mirror_reposync",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "bp85",
   "summary": "Mirror yum repositories to local + and create yum repos from those",
   "license": "Apache-2.0",
