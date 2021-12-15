@@ -102,7 +102,7 @@ main(){
               for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$REPOS_DIR/$OS/$REPO/repodata/$old_updateinfo"; done
             elif [ "$REPO" = 'epel' ]; then
               # add updateinfo.xml to mirror
-              gunzip -c -k $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo* | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
+              bunzip2 -c $(ls -S $REPOS_DIR/$OS/$REPO/*updateinfo*bz2 | tail -n 1) > $REPOS_DIR/$OS/$REPO/updateinfo.xml
               modifyrepo $REPOS_DIR/$OS/$REPO/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
               rm -f $REPOS_DIR/$OS/$REPO/*.xml.gz $REPOS_DIR/$OS/$REPO/*.xml.bz2
             elif [ "$REPO" = 'AppStream' ]; then
