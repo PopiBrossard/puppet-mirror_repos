@@ -49,17 +49,18 @@ class mirror_repos::config {
     $newest_only_string = ''
   }
   if ($mirror_repos::cache_dir) {
-    $cache_dir_string = '--cachedir ${cache_dir}'
+    $cache_dir_string = "--cachedir ${mirror_repos::cache_dir}"
   } else {
     $cache_dir_string = ''
   }
-  $options = "${download_comps_string}${download_metadata_string}${gpg_check_string}${delete_string}${newest_only_string}${cache_dir}"
+  $options = "${download_comps_string}${download_metadata_string}${gpg_check_string}${delete_string}${newest_only_string}${cache_dir_string}"
   #run cron every night to update repos
   cron { 'update-repos':
     command => " ( /usr/bin/time /usr/sbin/update-repos -v ${options} ) 2>&1 | /usr/bin/logger -t mirror_repos",
-    user    => 'root',
+    user    => $mirror_repos::cron_user,
     hour    => 1,
     minute  => 0,
+
     require => File['/usr/sbin/update-repos'],
   }
 }

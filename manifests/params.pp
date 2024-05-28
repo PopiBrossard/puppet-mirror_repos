@@ -7,6 +7,7 @@ class mirror_repos::params {
               $vhosts                   = {}
               $config_dir               = '/etc/mirror.repos.d'
               $repos_dir                = '/repos'
+              $cron_user                = 'root'
               $repos                    = {}
               $download_comps           = false
               $download_metadata        = false
@@ -23,6 +24,7 @@ class mirror_repos::params {
               $vhosts                   = {}
               $config_dir               = '/etc/mirror.repos.d'
               $repos_dir                = '/repos'
+              $cron_user                = 'root'
               $repos                    = {}
               $download_comps           = false
               $download_metadata        = false

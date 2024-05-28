@@ -40,6 +40,7 @@ class mirror_repos (
     Hash $vhosts                    = $mirror_repos::params::vhosts,
     String $config_dir              = $mirror_repos::params::config_dir,
     String $repos_dir               = $mirror_repos::params::repos_dir,
+    String $cron_user               = $mirror_repos::params::cron_user,
     Boolean $manage_vhost           = $mirror_repos::params::manage_vhost,
     Boolean $download_comps         = $mirror_repos::params::download_comps,
     Boolean $download_metadata      = $mirror_repos::params::download_metadata,
