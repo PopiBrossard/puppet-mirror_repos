@@ -73,6 +73,7 @@ main(){
     if [ ${UPDATE} == 'True' ]; then
         [ ! -f $CONFIG_DIR/$OS_NAME.repo ] && echo "$OS_NAME configuration not available at $CONFIG_DIR" && exit 1
         for REPO in ${REPOS_OS[@]}; do
+            # verify configuration exists
             if ! egrep -s "\[$REPO\]" $CONFIG_DIR/$OS_NAME.repo >& /dev/null ; then
                 echo "$REPO configuration not available" && exit 1
             fi
@@ -85,8 +86,19 @@ main(){
               update_repo='--update'
             fi
             mkdir -p $REPOS_DIR/$OS/
+            # cleanup cache dir. Initial check to avoid trying to remove "/".
+            if [[ "$CACHEDIR" =~ ^/[a-zA-Z0-9][-_a-zA-Z0-9/]*$ ]] && [ -d "$CACHEDIR" ]; then
+              # there are too many files for rm to remove all of them with only one command.
+              # We create different list of files to avoid this error.
+              for first_char in {a..z} {A..Z} {0..9}; do
+                # Only remove rpm files
+                rm -f "$CACHEDIR"/${first_char}*.rpm*
+              done
+              # remove metadata files
+              rm -f "$CACHEDIR"/*.xml
+            fi
             #sync remote repos to local directories
-            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ $option
+            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ --cachedir $CACHEDIR $option
             #create yum repository from local synced directories
             createrepo_option=''
             if [ -f  $REPOS_DIR/$OS/$REPO/comps.xml ]; then
@@ -107,7 +119,7 @@ main(){
               rm -f $REPOS_DIR/$OS/$REPO/*.xml.gz $REPOS_DIR/$OS/$REPO/*.xml.bz2
               for file_to_remove in updateinfo primary filelists comps other; do
                 for extension_to_remove in xml.gz xml sqlite.bz2; do
-                  for file in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/*$file_to_remove.$extension_to_remove | head -n -1); do 
+                  for file in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/*$file_to_remove.$extension_to_remove | head -n -1); do
                     rm -f $file
                   done
                 done
