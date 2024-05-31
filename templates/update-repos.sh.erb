@@ -78,7 +78,9 @@ main(){
                 echo "$REPO configuration not available" && exit 1
             fi
             echo "updating $REPO for $OS_NAME now"
+            echo "$OS" | grep -o '^[0-9]*' > /etc/yum/vars/releasever
             yum clean all >& /dev/null
+            yum repolist >& /dev/null
             # don't update on first execution
             if [ -d $REPOS_DIR/$OS/$REPO ]; then
               update_repo=''
@@ -96,6 +98,9 @@ main(){
               done
               # remove metadata files
               rm -f "$CACHEDIR"/*.xml
+              if [ -d "$CACHEDIR/$REPO" ]; then
+                rm -rf "$CACHEDIR/$REPO"
+              fi
             fi
             #sync remote repos to local directories
             $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ --cachedir $CACHEDIR $option
