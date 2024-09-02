@@ -128,7 +128,7 @@ main(){
               rm -f $REPOS_DIR/$OS/$REPO/*.xml.gz $REPOS_DIR/$OS/$REPO/*.xml.bz2
               for file_to_remove in updateinfo primary filelists comps other; do
                 for extension_to_remove in xml.gz xml sqlite.bz2; do
-                  for file in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/*$file_to_remove.$extension_to_remove | head -n -1); do
+                  for file in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/*$file_to_remove.$extension_to_remove 2>/dev/null | head -n -1); do
                     rm -f $file
                   done
                 done
@@ -169,7 +169,7 @@ main(){
               generate_updateinfo -s all -t all -r $version $CACHEDIR/errata.latest.xml -d $CACHEDIR
               modifyrepo $CACHEDIR/updateinfo-$version/updateinfo.xml $REPOS_DIR/$OS/$REPO/repodata
               # old updateinfo files aren't automatically cleaned up, manually doing it
-              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$REPOS_DIR/$OS/$REPO/repodata/$old_updateinfo"; done
+              for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/repodata/ 2>/dev/null | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$REPOS_DIR/$OS/$REPO/repodata/$old_updateinfo"; done
               for old_updateinfo in $(ls -rt $REPOS_DIR/$OS/$REPO/ | grep update | head -n -1); do echo "deleting outdated $old_updateinfo" && rm -f "$REPOS_DIR/$OS/$REPO/$old_updateinfo"; done
             <% end %>
             fi
