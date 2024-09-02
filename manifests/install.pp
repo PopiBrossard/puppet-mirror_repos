@@ -6,7 +6,7 @@ class mirror_repos::install {
   file { '/usr/bin/generate_updateinfo':
     ensure => file,
     source => $mirror_repos::generate_updateinfo_url,
-    mode   => '0750',
+    mode   => '0755',
     owner  => 'root',
   }
 }
