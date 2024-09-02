@@ -70,6 +70,10 @@ main(){
     if [ ${NEWEST} == 'True' ]; then
       option+=' -n'
     fi
+    local arch=''
+    if [[ ! -z $OS_ARCH ]]; then
+      arch="-a $OS_ARCH"
+    fi
     if [ ${UPDATE} == 'True' ]; then
         [ ! -f $CONFIG_DIR/$OS_NAME.repo ] && echo "$OS_NAME configuration not available at $CONFIG_DIR" && exit 1
         for REPO in ${REPOS_OS[@]}; do
@@ -103,7 +107,7 @@ main(){
               fi
             fi
             #sync remote repos to local directories
-            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ --cachedir $CACHEDIR $option
+            $REPOSYNC_CMD -q -l -c $CONFIG_DIR/$OS_NAME.repo --repoid=$REPO --download_path=$REPOS_DIR/$OS/ --cachedir $CACHEDIR $option $arch
             #create yum repository from local synced directories
             createrepo_option=''
             if [ -f  $REPOS_DIR/$OS/$REPO/comps.xml ]; then
@@ -250,6 +254,12 @@ for OS in ${OSES[@]}; do
     OS=$(echo $OS | sed 's/-/_/g')
     # for variable name, remove all extra '/'
     OS_NAME=$(echo $OS | sed 's/\//_/g')
+    # for variable name, remove all extra '/'
+    if [[ $OS == *"/"* ]]; then
+      OS_ARCH=$(echo $OS | cut -d '/' -f2)
+    else
+      OS_ARCH=''
+    fi
     #now define a new array, because substrings won't perform well in for loop
     REPOS_OS=$(eval echo \${REPOS_${OS_NAME}[*]})
     if [ ${VERBOSE} == 'False' ]; then
